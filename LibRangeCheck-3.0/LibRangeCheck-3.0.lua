@@ -1018,6 +1018,11 @@ function lib:init(forced)
   if changed and self.callbacks then
     self.callbacks:Fire(self.CHECKERS_CHANGED)
   end
+	-- CUSTOM PATCH: After initializing checkers, force refresh item requests if needed
+	if forced then
+		initItemRequests(true)
+		self:processItemRequests(friendItemRequests or harmItemRequests)
+	end
 end
 
 --- Return an iterator for checkers usable on friendly units as (**range**, **checker**) pairs.
@@ -1252,6 +1257,11 @@ function lib:GET_ITEM_INFO_RECEIVED(event, item, success)
     end
     lastUpdate = UpdateDelay
   end
+	-- CUSTOM PATCH: Invalidate and refresh the range cache when new item info is received
+	if success then
+		resetRangeCache() -- Clear the entire cache to force refreshing range data
+		self:init(true) -- Reinitialize checkers to include new item data
+	end
 end
 
 function lib:processItemRequests(itemRequests)
